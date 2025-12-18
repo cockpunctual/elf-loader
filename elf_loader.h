@@ -7,3 +7,5 @@ struct elf_info
     size_t len;
     Elf64_Phdr* phr;
 };
+
+void run_elf_main(char* file);

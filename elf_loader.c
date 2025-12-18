@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/mman.h>
+#include <string.h>
 #include "elf_loader.h"
 
 struct elf_info info;
@@ -134,35 +135,19 @@ unsigned int look_up_symbol(char* name)
     char* str_tab = (char*)info.hdr + str_sec->sh_offset;
     printf("string table size: %x\n", str_tab_size);
     printf("idx: %d, sh_type: %x, size: %x\n", sym_sec->sh_name, sym_sec->sh_offset, sym_sec->sh_size / sizeof(Elf64_Sym));
-    // for (; j < (sym_sec->sh_size / sizeof(Elf64_Sym)); ++j) {
-    //     cnt = 0;
-    //     left = 0;
-    //     printf("name idx: %d, left: %d, cnt: %d\n", sym_entries[j].st_name, left, cnt);
 
-    // }
-    printf("value: %x, name idx: %d\n", sym_entries[1448].st_value, sym_entries[1448].st_name);
-    // while ((left < str_tab_size)) {
-    //     // printf("hello123213:%d\n", str_tab_size);
-    //     if (str_tab[left] == '\0') {
-    //         cnt++;
-    //         if (cnt == sym_entries[1448].st_name) {
-    //             printf("cnt: %d, name: %s\n", cnt, str_tab + left + 1);
-    //             break;
-    //         }
-    //         // printf("%s\n", str_tab[left + 1]);
-    //         // printf("%s", str_tab + left + 1);
-    //         // printf("\n");
-    //     }
-    //     // if ()
-    //     left++;
-    // }
-    printf("cnt: %d, name: %s\n", cnt, str_tab + sym_entries[1448].st_name);
-    if (!strcmp(str_tab + sym_entries[1448].st_name, name)) {
-        printf("main ptr: %p\n", sym_entries[1448].st_value);
-        // return sym_entries[j].st_value;
+    printf("entry cnt: %d\n", (sym_sec->sh_size / sizeof(Elf64_Sym)));
+    while (left < (sym_sec->sh_size / sizeof(Elf64_Sym))) {
+        printf("%d   %s: %p\n", left, str_tab + sym_entries[left].st_name, sym_entries[left].st_value);
+        if (!strcmp(str_tab + sym_entries[left].st_name, name)) {
+            printf("main ptr: %p\n", sym_entries[left].st_value);
+            break;
+        }
+        left++;
     }
-    printf("Cannot find: %s\n", name);
-    return sym_entries[1448].st_value;
+    // printf("cnt: %d, name: %s\n", cnt, str_tab + sym_entries[1448].st_name);
+    printf("Can find: %s\n", str_tab + sym_entries[left].st_name);
+    return sym_entries[left].st_value;
 }
 
 /**
@@ -218,8 +203,8 @@ static void map_seg_to_mem(void)
         printf("copy idx: %x, vaddr: %x, file size: %x, mapped addr: %x\n",
             idx, info.phr[idx].p_vaddr, info.phr[idx].p_filesz, (char*)bias_ptr + offset);
         // printf("Header num: %d\n", info.hdr->e_phnum);
-        memcpy((char*)info.phr[idx].p_vaddr + offset, ((char*)info.hdr + info.phr[idx].p_offset), info.phr[idx].p_filesz);
-        // bias_ptr += (info.phr[idx].p_filesz);
+        memcpy(offset + info.phr[idx].p_vaddr, ((char*)info.hdr + info.phr[idx].p_offset), info.phr[idx].p_filesz);
+        bias_ptr += (info.phr[idx].p_filesz);
     }
 }
 
