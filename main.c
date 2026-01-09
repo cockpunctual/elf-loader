@@ -4,6 +4,6 @@
 #include "elf_loader.h"
 int main()
 {
-    run_elf_main("./test");
+    run_elf_main("./test.so");
     return 0;
 }
